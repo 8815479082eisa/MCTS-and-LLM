@@ -49,9 +49,14 @@ def send_to_vila(image_bytes: bytes, filename: str):
 
     media_tag = f'<img src="data:{content_type};asset_id,{asset_id}" />'
     messages = [{
-        "role": "user",
-        "content": f"Describe the scene {media_tag}"
-    }]
+    "role": "user",
+    "content": (
+        "This image is from the game Turing Tumble. In this game, marbles fall from the top and interact with mechanical components to compute logic. "
+        "The objective is to solve a logic challenge by placing ramps, crossovers, gears, and bits. "
+        f"Please analyze this image and explain what kind of logic mechanism is shown. Then give me hints or steps I can follow to solve this challenge. {media_tag}"
+    )
+}]
+
 
     headers = {
         "Authorization": f"Bearer {NIM_API_KEY}",

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NVIDIA VILA Image Describer</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 40px;
+    }
+
+    input, button {
+      margin-top: 10px;
+    }
+
+    img {
+      max-width: 300px;
+      margin-top: 20px;
+      display: block;
+    }
+
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f5f5f5;
+      border-left: 4px solid #4CAF50;
+      border-radius: 8px;
+      white-space: pre-wrap;
+    }
+
+    #error {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #ffe6e6;
+      border-left: 4px solid red;
+      border-radius: 8px;
+      color: darkred;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Describe an Image with NVIDIA VILA</h2>
+
+  <input type="file" id="imageInput" accept="image/*">
+  <button onclick="uploadImage()">Describe Image</button>
+
+  <img id="preview" src="" alt="Preview will appear here..." />
+
+  <div id="result" style="display: none;"></div>
+  <div id="error" style="display: none;"></div>
+
+  <script>
+    async function uploadImage() {
+      const fileInput = document.getElementById("imageInput");
+      const file = fileInput.files[0];
+      const preview = document.getElementById("preview");
+      const resultDiv = document.getElementById("result");
+      const errorDiv = document.getElementById("error");
+
+      // Reset
+      resultDiv.style.display = "none";
+      errorDiv.style.display = "none";
+      resultDiv.innerText = "";
+      errorDiv.innerText = "";
+
+      if (!file) {
+        alert("Please select an image.");
+        return;
+      }
+
+      // Show preview
+      preview.src = URL.createObjectURL(file);
+
+      // Prepare form data
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/describe-image/", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          errorDiv.innerText = "❌ Error: " + errorText;
+          errorDiv.style.display = "block";
+          return;
+        }
+
+        const result = await response.json();
+        const description = result?.choices?.[0]?.message?.content || JSON.stringify(result, null, 2);
+        resultDiv.innerText = "✅ Description:\n" + description;
+        resultDiv.style.display = "block";
+
+      } catch (err) {
+        errorDiv.innerText = "❌ Fetch error: " + err.message;
+        errorDiv.style.display = "block";
+      }
+    }
+  </script>
+
+</body>
+</html>
